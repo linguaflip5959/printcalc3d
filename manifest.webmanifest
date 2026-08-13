@@ -26,7 +26,7 @@
   "screenshots": [
     {
       "src": "./screenshot1.png",
-      "sizes": "1080x1920",
+      "sizes": "720x1280",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Main calculation screen"
