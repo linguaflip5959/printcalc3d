@@ -329,12 +329,12 @@
     </div>
 
     <!-- BOTTOM NAV -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('calc', this)"><span class="nav-icon">🧮</span> <span data-i18n="nav_calc">Расчет</span></button>
-        <button class="nav-item" onclick="switchTab('filament', this)"><span class="nav-icon">🧵</span> <span data-i18n="nav_fil">Филамент</span></button>
-        <button class="nav-item" onclick="switchTab('printer', this)"><span class="nav-icon">🖨️</span> <span data-i18n="nav_prt">Железо</span></button>
-        <button class="nav-item" onclick="switchTab('history', this)"><span class="nav-icon">📁</span> <span data-i18n="nav_hist">История</span></button>
-    </nav>
+	<nav class="bottom-nav">
+		<button class="nav-item active" data-tab="calc" onclick="switchTab('calc', this)"><span class="nav-icon">🧮</span> <span data-i18n="nav_calc">Расчет</span></button>
+		<button class="nav-item" data-tab="filament" onclick="switchTab('filament', this)"><span class="nav-icon">🧵</span> <span data-i18n="nav_fil">Филамент</span></button>
+		<button class="nav-item" data-tab="printer" onclick="switchTab('printer', this)"><span class="nav-icon">🖨️</span> <span data-i18n="nav_prt">Железо</span></button>
+		<button class="nav-item" data-tab="history" onclick="switchTab('history', this)"><span class="nav-icon">📁</span> <span data-i18n="nav_hist">История</span></button>
+	</nav>
 
     <script>
         var i18n = {
@@ -454,12 +454,21 @@
         function importHistory(event) { var lang = DB.getLang(); var file = event.target.files[0]; if(!file) return; var reader = new FileReader(); reader.onload = function(e) { try { var imported = JSON.parse(e.target.result); if(Array.isArray(imported)) { DB.setHistory(imported); renderHistory(); showToast(i18n[lang].toast_hist_imp_ok); } else { showToast(i18n[lang].toast_hist_imp_err); } } catch(err) { showToast(i18n[lang].toast_hist_read_err); } }; reader.readAsText(file); event.target.value = ''; }
 
         window.onload = function() {
-            document.body.setAttribute('data-theme', DB.getTheme());
-            if (DB.getAdStatus()) document.body.classList.add('ad-free');
-            applyTranslations();
-            renderFilaments(); renderPrinters(); updateCalcDropdowns();
-            document.getElementById('import-file').addEventListener('change', importHistory);
-        };
+			document.body.setAttribute('data-theme', DB.getTheme());
+			if (DB.getAdStatus()) document.body.classList.add('ad-free');
+			applyTranslations();
+			renderFilaments(); renderPrinters(); updateCalcDropdowns();
+			document.getElementById('import-file').addEventListener('change', importHistory);
+
+			// --- ЛОГИКА ДЛЯ PWA SHORTCUTS ---
+			const urlParams = new URLSearchParams(window.location.search);
+			const tab = urlParams.get('tab');
+			if (tab === 'history') {
+				// Находим кнопку "История" в нижнем меню и эмулируем клик
+				const historyBtn = document.querySelector('.nav-item[data-tab="history"]');
+				// Обратите внимание: в HTML-коде кнопкам навигации нужно добавить атрибут data-tab
+			}
+		};
 
         // --- PWA РЕГИСТРАЦИЯ SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
