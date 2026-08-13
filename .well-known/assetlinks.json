@@ -1,1 +1,8 @@
-
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.linguaflip5959.printcalc",
+        "sha256_cert_fingerprints": ["6B:2B:87:14:D2:DC:3F:B0:B4:E3:F9:E5:D0:2D:49:75:03:2F:D9:12:18:D3:58:71:BB:11:44:48:A1:23:33:56"]
+      }
+    }]
