@@ -31,23 +31,35 @@
             font-family: var(--font-main); background-color: var(--bg-color);
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 20px 20px; color: var(--text-color);
-            transition: background-color 0.4s, color 0.4s; padding-bottom: 80px; padding-top: 60px; min-height: 100vh;
+            transition: background-color 0.4s, color 0.4s; padding-bottom: 80px; padding-top: 95px; min-height: 100vh;
         }
-        body.ad-free { padding-top: 10px; }
+        body.ad-free { padding-top: 55px; }
         body.ad-free .smart-banner { display: none !important; }
         body.ad-free #btn-ad { display: none !important; }
 
-        /* Шапка и кнопки (Адаптивность) */
-        .smart-banner { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            background: var(--card-bg); border-bottom: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: space-between;
-            font-size: 0.8rem; font-family: var(--font-mono); z-index: 100;
-            opacity: 0.95; backdrop-filter: blur(5px); padding: 0 15px; gap: 15px;
+        /* Шапка: Две строки */
+        .app-header {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .banner-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .top-controls { position: static; z-index: 101; display: flex; gap: 8px; flex-shrink: 0; }
-        .ctrl-btn { background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 10px; cursor: pointer; border-radius: 4px; font-size: 0.8rem; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; min-width: 36px; }
+        .smart-banner { 
+            display: flex; align-items: center; justify-content: center; height: 40px;
+            font-size: 0.8rem; font-family: var(--font-mono);
+            padding: 0 15px; text-align: center;
+            overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .top-controls { 
+            display: flex; justify-content: flex-end; align-items: center;
+            padding: 8px 15px; gap: 8px;
+        }
+        .ctrl-btn { 
+            background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); 
+            padding: 6px 10px; cursor: pointer; border-radius: 4px; font-size: 0.8rem; 
+            transition: transform 0.2s; display: flex; align-items: center; justify-content: center; min-width: 36px; 
+        }
         .ctrl-btn:active { transform: scale(0.9); }
 
         .container { max-width: 600px; margin: 0 auto; padding: 20px; display: none; animation: fadeIn 0.4s ease-in-out; }
@@ -117,8 +129,12 @@
         .nav-item { background: none; border: none; color: var(--text-color); font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.6; cursor: pointer; transition: opacity 0.2s, color 0.2s; }
         .nav-item.active { color: var(--accent-color); opacity: 1; }
         .nav-icon { font-size: 1.5rem; }
-        .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-color); color: var(--bg-color); padding: 12px 20px; border-radius: 4px; font-size: 0.9rem; z-index: 1000; opacity: 0; transition: transform 0.3s ease-out, opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: var(--font-mono); }
+        
+        /* Тост смещен ниже шапки */
+        .toast { position: fixed; top: 110px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-color); color: var(--bg-color); padding: 12px 20px; border-radius: 4px; font-size: 0.9rem; z-index: 1000; opacity: 0; transition: transform 0.3s ease-out, opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: var(--font-mono); }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        body.ad-free .toast { top: 70px; }
+        
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
         .modal-content { background: var(--card-bg); padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
@@ -135,16 +151,18 @@
 </head>
 <body>
 
-    <!-- Шапка: Баннер и кнопки разделены -->
-    <div class="smart-banner">
-        <div class="banner-text"><span data-i18n="banner_ad">📢 Реклама: 3D Gloop со скидкой 10% — лучший клей для моделей!</span></div>
+    <!-- Шапка: Баннер и кнопки на разных строках -->
+    <header class="app-header">
+        <div class="smart-banner">
+            <span data-i18n="banner_ad">📢 Реклама: 3D Gloop со скидкой 10% — лучший клей для моделей!</span>
+        </div>
         <div class="top-controls">
             <button class="ctrl-btn" id="btn-lang" onclick="toggleLang()">RU</button>
             <button class="ctrl-btn" onclick="toggleTheme()">🌙</button>
             <button class="ctrl-btn" id="btn-ad" onclick="disableAd()">🚫</button>
             <button class="ctrl-btn" onclick="buyCoffee()">☕</button>
         </div>
-    </div>
+    </header>
 
     <div id="toast" class="toast">Уведомление</div>
 
@@ -260,7 +278,6 @@
             <label data-i18n="lbl_fil_name">Название / Тип</label>
             <input type="text" id="fil-name" placeholder="FDPlast PLA Черный">
         </div>
-        
         <div class="form-group">
             <label data-i18n="lbl_fil_weight">Вес катушки (г)</label>
             <div class="spinbox-wrap">
@@ -271,7 +288,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="form-group">
             <label data-i18n="lbl_fil_price">Цена (руб)</label>
             <div class="spinbox-wrap">
@@ -282,7 +298,6 @@
                 </div>
             </div>
         </div>
-
         <button class="btn" onclick="addFilament()" data-i18n="btn_add_fil">Добавить катушку</button>
         <h3 data-i18n="h3_dir">Справочник</h3>
         <div id="filament-list"></div>
@@ -295,7 +310,6 @@
             <label data-i18n="lbl_prt_name">Имя принтера</label>
             <input type="text" id="prt-name" placeholder="Tronxy X5SA">
         </div>
-        
         <div class="form-group">
             <label data-i18n="lbl_prt_power">Мощность (Вт)</label>
             <div class="spinbox-wrap">
@@ -306,7 +320,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="form-group">
             <label data-i18n="lbl_prt_amort">Амортизация (руб/час)</label>
             <div class="spinbox-wrap">
@@ -446,12 +459,52 @@
         function adjustValue(id, delta) { var input = document.getElementById(id); if(!input) return; var currentVal = parseFloat(input.value) || 0; currentVal = currentVal + delta; if (currentVal < 0) currentVal = 0; if (delta % 1 !== 0) { input.value = currentVal.toFixed(1); } else { input.value = Math.round(currentVal); } if(id === 'prt-electricity') DB.setElectricity(input.value); }
 
         function addFilament() { try { var name = document.getElementById('fil-name').value.trim(); var weight = parseFloat(document.getElementById('fil-weight').value); var price = parseFloat(document.getElementById('fil-price').value); if(!name || isNaN(weight) || weight <= 0 || isNaN(price) || price <= 0) { showToast(i18n[DB.getLang()].err_fill); return; } var filaments = DB.getFilaments(); filaments.push({ id: Date.now(), name: name, weight: weight, price: price }); DB.setFilaments(filaments); document.getElementById('fil-name').value = ''; document.getElementById('fil-price').value = ''; showToast(i18n[DB.getLang()].toast_fil_added); renderFilaments(); } catch(e) { showToast(i18n[DB.getLang()].err_calc + e.message); } }
-        function renderFilaments() { var lang = DB.getLang(); var list = document.getElementById('filament-list'); var filaments = DB.getFilaments(); list.innerHTML = ''; if(filaments.length === 0) { list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_fil+'</div>'; return; } for (var i = 0; i < filaments.length; i++) { var f = filaments[i]; var div = document.createElement('div'); div.className = 'data-card'; div.innerHTML = '<div class="card-info"><div class="card-title">' + f.name + '</div><div class="card-meta">' + f.weight + 'g | ' + f.price + ' ₽ | <span class="accent-text">' + (f.price/f.weight).toFixed(2) + ' ₽/g</span></div></div><div class="card-actions"><button class="btn-icon danger" onclick="deleteFilament(' + f.id + ')">Delete</button></div>'; list.appendChild(div); } }
+        
+        function renderFilaments() { 
+            var lang = DB.getLang(); 
+            var cur = lang == 'en' ? '$' : ' ₽'; 
+            var list = document.getElementById('filament-list'); 
+            var filaments = DB.getFilaments(); 
+            list.innerHTML = ''; 
+            if(filaments.length === 0) { 
+                list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_fil+'</div>'; 
+                return; 
+            } 
+            for (var i = 0; i < filaments.length; i++) { 
+                var f = filaments[i]; 
+                var div = document.createElement('div'); 
+                div.className = 'data-card'; 
+                var priceStr = lang == 'en' ? cur + f.price : f.price + cur;
+                var perG = lang == 'en' ? cur + (f.price/f.weight).toFixed(2) : (f.price/f.weight).toFixed(2) + cur;
+                div.innerHTML = '<div class="card-info"><div class="card-title">' + f.name + '</div><div class="card-meta">' + f.weight + 'g | ' + priceStr + ' | <span class="accent-text">' + perG + '/g</span></div></div><div class="card-actions"><button class="btn-icon danger" onclick="deleteFilament(' + f.id + ')">Delete</button></div>'; 
+                list.appendChild(div); 
+            } 
+        }
         function deleteFilament(id) { DB.setFilaments(DB.getFilaments().filter(function(f) { return f.id !== id; })); showToast(i18n[DB.getLang()].toast_fil_del); renderFilaments(); }
 
         function saveElectricity() { DB.setElectricity(document.getElementById('prt-electricity').value); showToast(i18n[DB.getLang()].toast_elec); }
         function addPrinter() { try { var name = document.getElementById('prt-name').value.trim(); var power = parseFloat(document.getElementById('prt-power').value); var amort = parseFloat(document.getElementById('prt-amort').value); if(!name || isNaN(power) || power <= 0 || isNaN(amort) || amort < 0) { showToast(i18n[DB.getLang()].err_fill); return; } var printers = DB.getPrinters(); printers.push({ id: Date.now(), name: name, power: power, amort: amort, active: printers.length === 0 }); DB.setPrinters(printers); document.getElementById('prt-name').value = ''; showToast(i18n[DB.getLang()].toast_prt_added); renderPrinters(); } catch(e) { showToast(i18n[DB.getLang()].err_calc + e.message); } }
-        function renderPrinters() { var lang = DB.getLang(); var list = document.getElementById('printer-list'); var printers = DB.getPrinters(); list.innerHTML = ''; document.getElementById('prt-electricity').value = DB.getElectricity(); if(printers.length === 0) { list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_prt+'</div>'; return; } for (var i = 0; i < printers.length; i++) { var p = printers[i]; var div = document.createElement('div'); div.className = 'data-card ' + (p.active ? 'active' : ''); div.innerHTML = '<div class="card-info"><div class="card-title">' + p.name + (p.active ? ' <span class="badge">'+ (lang=='ru'?'Активен':'Active') +'</span>' : '') + '</div><div class="card-meta">' + p.power + ' W | ' + (lang=='ru'?'Износ':'Depreciation') + ': ' + p.amort + ' ₽/h</div></div><div class="card-actions">' + (!p.active ? '<button class="btn-icon" onclick="setActivePrinter(' + p.id + ')">'+(lang=='ru'?'Выбрать':'Select')+'</button>' : '') + '<button class="btn-icon danger" onclick="deletePrinter(' + p.id + ')">'+(lang=='ru'?'Удалить':'Delete')+'</button></div>'; list.appendChild(div); } }
+        
+        function renderPrinters() { 
+            var lang = DB.getLang(); 
+            var cur = lang == 'en' ? '$' : ' ₽'; 
+            var list = document.getElementById('printer-list'); 
+            var printers = DB.getPrinters(); 
+            list.innerHTML = ''; 
+            document.getElementById('prt-electricity').value = DB.getElectricity(); 
+            if(printers.length === 0) { 
+                list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_prt+'</div>'; 
+                return; 
+            } 
+            for (var i = 0; i < printers.length; i++) { 
+                var p = printers[i]; 
+                var div = document.createElement('div'); 
+                div.className = 'data-card ' + (p.active ? 'active' : ''); 
+                var amortStr = lang == 'en' ? cur + p.amort + '/h' : p.amort + cur + '/h';
+                div.innerHTML = '<div class="card-info"><div class="card-title">' + p.name + (p.active ? ' <span class="badge">'+ (lang=='ru'?'Активен':'Active') +'</span>' : '') + '</div><div class="card-meta">' + p.power + ' W | ' + (lang=='ru'?'Износ':'Depreciation') + ': ' + amortStr + '</div></div><div class="card-actions">' + (!p.active ? '<button class="btn-icon" onclick="setActivePrinter(' + p.id + ')">'+(lang=='ru'?'Выбрать':'Select')+'</button>' : '') + '<button class="btn-icon danger" onclick="deletePrinter(' + p.id + ')">'+(lang=='ru'?'Удалить':'Delete')+'</button></div>'; 
+                list.appendChild(div); 
+            } 
+        }
         function setActivePrinter(id) { DB.setPrinters(DB.getPrinters().map(function(p) { return { name: p.name, id: p.id, power: p.power, amort: p.amort, active: p.id === id }; })); renderPrinters(); showToast(i18n[DB.getLang()].toast_prt_sel); }
         function deletePrinter(id) { DB.setPrinters(DB.getPrinters().filter(function(p) { return p.id !== id; })); showToast(i18n[DB.getLang()].toast_prt_del); renderPrinters(); }
 
@@ -475,7 +528,7 @@
                 var markup = parseFloat(document.getElementById('calc-markup').value) / 100;
                 var electricityCost = parseFloat(DB.getElectricity()) || 0;
                 
-                // МАТЕМАТИЧЕСКАЯ ТОЧНОСТЬ: Округляем время до сотых ПЕРЕД расчетом
+                // Округляем время до сотых
                 var timeInHours = Math.round((hours + (minutes / 60)) * 100) / 100;
                 
                 var plasticCost = (filament.price / filament.weight) * (weight + (weight * waste));
@@ -484,21 +537,26 @@
                 var costPrice = plasticCost + energyCost + amortCost;
                 var clientPrice = costPrice + labor + ((costPrice + labor) * markup);
                 
-                document.getElementById('res-cost').innerText = costPrice.toFixed(2) + ' ₽';
-                document.getElementById('res-price').innerText = clientPrice.toFixed(2) + ' ₽';
+                // Динамическая валюта
+                var cur = lang == 'en' ? '$' : ' ₽';
+                var fmt = function(val) { return lang == 'en' ? cur + val.toFixed(2) : val.toFixed(2) + cur; };
+                var fmtStr = function(val) { return lang == 'en' ? cur + val : val + cur; };
+                
+                document.getElementById('res-cost').innerText = fmt(costPrice);
+                document.getElementById('res-price').innerText = fmt(clientPrice);
                 
                 var pName = currentProjectData.name || (lang=='ru'?'Без названия':'Untitled');
                 var pCust = currentProjectData.customer || (lang=='ru'?'Для себя':'For myself');
                 var pId = currentProjectData.id || 'XXXX-XX-0000';
                 
-                var adminReceipt = "================================\n" + t.rec_id + pId + "\n" + t.rec_item + pName + "\n" + t.rec_cust + pCust + "\n================================\n\n" + t.rec_mat + "(" + filament.price + "₽ ÷ " + filament.weight + "g) × (" + weight + "g + " + (weight * waste).toFixed(2) + "g) = " + plasticCost.toFixed(2) + " ₽\n\n" + t.rec_elec + timeInHours.toFixed(2) + "h × " + electricityCost + "₽ × " + printer.power + "W/1000 = " + energyCost.toFixed(2) + " ₽\n\n" + t.rec_amort + timeInHours.toFixed(2) + "h × " + printer.amort + "₽ = " + amortCost.toFixed(2) + " ₽\n\n" + t.rec_cost_label + costPrice.toFixed(2) + " ₽\n\n" + t.rec_labor_label + labor.toFixed(2) + " ₽\n\n" + t.rec_markup_label + (markup * 100) + "%: " + ((costPrice + labor) * markup).toFixed(2) + " ₽\n\n================================\n" + t.rec_total + clientPrice.toFixed(2) + " ₽\n================================\n";
+                var adminReceipt = "================================\n" + t.rec_id + pId + "\n" + t.rec_item + pName + "\n" + t.rec_cust + pCust + "\n================================\n\n" + t.rec_mat + "(" + fmtStr(filament.price) + " ÷ " + filament.weight + "g) × (" + weight + "g + " + (weight * waste).toFixed(2) + "g) = " + fmt(plasticCost) + "\n\n" + t.rec_elec + timeInHours.toFixed(2) + "h × " + fmtStr(electricityCost) + " × " + printer.power + "W/1000 = " + fmt(energyCost) + "\n\n" + t.rec_amort + timeInHours.toFixed(2) + "h × " + fmtStr(printer.amort) + " = " + fmt(amortCost) + "\n\n" + t.rec_cost_label + fmt(costPrice) + "\n\n" + t.rec_labor_label + fmt(labor) + "\n\n" + t.rec_markup_label + (markup * 100) + "%: " + fmt((costPrice + labor) * markup) + "\n\n================================\n" + t.rec_total + fmt(clientPrice) + "\n================================\n";
                 
                 document.getElementById('formula-breakdown').innerText = adminReceipt;
                 document.getElementById('results-box').classList.add('show');
                 
-                var userReceipt = t.rec_user_title + t.rec_user_id + pId + "\n" + t.rec_user_item + pName + "\n" + t.rec_user_cust + pCust + "\n" + t.rec_user_fil + filament.name + "\n" + t.rec_user_weight + weight + "g\n" + t.rec_user_time + hours + "h " + minutes + "m\n" + t.rec_user_price + clientPrice.toFixed(2) + " ₽";
+                var userReceipt = t.rec_user_title + t.rec_user_id + pId + "\n" + t.rec_user_item + pName + "\n" + t.rec_user_cust + pCust + "\n" + t.rec_user_fil + filament.name + "\n" + t.rec_user_weight + weight + "g\n" + t.rec_user_time + hours + "h " + minutes + "m\n" + t.rec_user_price + fmt(clientPrice);
                 
-                window.lastCalc = { id: pId, name: pName, customer: pCust, filament: filament.name, weight: weight, hours: hours, minutes: minutes, price: clientPrice.toFixed(2), date: new Date().toLocaleString(), adminReceipt: adminReceipt, userReceipt: userReceipt };
+                window.lastCalc = { id: pId, name: pName, customer: pCust, filament: filament.name, weight: weight, hours: hours, minutes: minutes, price: fmt(clientPrice), date: new Date().toLocaleString(), adminReceipt: adminReceipt, userReceipt: userReceipt };
                 
                 var history = DB.getHistory(); history.unshift(window.lastCalc); if(history.length > 50) history = history.slice(0, 50); DB.setHistory(history);
             } catch(e) { showToast(i18n[DB.getLang()].err_calc + e.message); }
@@ -520,7 +578,33 @@
             window.open(url, '_blank'); closeModal(null, 'share-modal');
         }
 
-        function renderHistory() { var lang = DB.getLang(); var list = document.getElementById('history-list'); var history = DB.getHistory(); list.innerHTML = ''; if(history.length === 0) { list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_hist+'</div>'; return; } for (var i = 0; i < history.length; i++) { var h = history[i]; var card = document.createElement('div'); card.style.marginBottom = '15px'; var cardHtml = '<div class="data-card" onclick="toggleHistoryDetails(\'hist-' + i + '\')"><div class="card-info"><div class="card-title">[' + h.id + '] ' + h.name + '</div><div class="card-meta">' + h.date + ' | ' + h.price + ' ₽</div></div><div class="card-actions"><button class="btn-icon danger" onclick="deleteHistoryItem(' + i + ', event)">Delete</button></div></div><div id="hist-' + i + '" class="history-details">' + (h.adminReceipt || '...') + '</div>'; card.innerHTML = cardHtml; list.appendChild(card); } }
+        function renderHistory() { 
+            var lang = DB.getLang(); 
+            var list = document.getElementById('history-list'); 
+            var history = DB.getHistory(); 
+            list.innerHTML = ''; 
+            if(history.length === 0) { 
+                list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_hist+'</div>'; 
+                return; 
+            } 
+            for (var i = 0; i < history.length; i++) { 
+                var h = history[i]; 
+                var card = document.createElement('div'); 
+                card.style.marginBottom = '15px'; 
+                
+                // Корректируем валюту для старых записей при отрисовке
+                var histPrice = h.price;
+                if(lang == 'en' && histPrice.includes('₽')) {
+                    histPrice = '$' + histPrice.replace(' ₽', '');
+                } else if(lang == 'ru' && histPrice.includes('$')) {
+                    histPrice = histPrice.replace('$', '') + ' ₽';
+                }
+                
+                var cardHtml = '<div class="data-card" onclick="toggleHistoryDetails(\'hist-' + i + '\')"><div class="card-info"><div class="card-title">[' + h.id + '] ' + h.name + '</div><div class="card-meta">' + h.date + ' | ' + histPrice + '</div></div><div class="card-actions"><button class="btn-icon danger" onclick="deleteHistoryItem(' + i + ', event)">Delete</button></div></div><div id="hist-' + i + '" class="history-details">' + (h.adminReceipt || '...') + '</div>'; 
+                card.innerHTML = cardHtml; 
+                list.appendChild(card); 
+            } 
+        }
         function toggleHistoryDetails(id) { var el = document.getElementById(id); if(el) el.classList.toggle('show'); }
         function deleteHistoryItem(index, event) { event.stopPropagation(); var history = DB.getHistory(); history.splice(index, 1); DB.setHistory(history); renderHistory(); showToast(i18n[DB.getLang()].toast_hist_del); }
 
