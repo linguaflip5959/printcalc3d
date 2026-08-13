@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Print Calculator CRM</title>
+    
+    <!-- PWA Настройки -->
+    <meta name="theme-color" content="#0a0e14">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./icon.svg">
+    <link rel="icon" type="image/svg+xml" href="./icon.svg">
+    
+    <style>
+        :root {
+            --bg-color: #0a0e14; --card-bg: #151c23; --text-color: #e0e6ed;
+            --accent-color: #00ff9d; --border-color: #2a3441; --input-bg: #0f1419;
+            --danger-color: #ff4757; --grid-color: rgba(255, 255, 255, 0.03);
+            --focus-glow: rgba(0, 255, 157, 0.2);
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
+        }
+        [data-theme="light"] {
+            --bg-color: #f5f0e8; --card-bg: #ffffff; --text-color: #3e2723;
+            --accent-color: #c65d00; --border-color: #e0d5c9; --input-bg: #fdfaf6;
+            --danger-color: #d32f2f; --grid-color: rgba(62, 39, 35, 0.05);
+            --focus-glow: rgba(198, 93, 0, 0.25);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: var(--font-main); background-color: var(--bg-color);
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px; color: var(--text-color);
+            transition: background-color 0.4s, color 0.4s; padding-bottom: 80px; padding-top: 60px; min-height: 100vh;
+        }
+        body.ad-free { padding-top: 10px; }
+        body.ad-free .smart-banner { display: none !important; }
+        body.ad-free #btn-ad { display: none !important; }
+
+        .smart-banner { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: var(--card-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-family: var(--font-mono); z-index: 100; opacity: 0.95; backdrop-filter: blur(5px); padding: 0 160px 0 20px; text-align: center; }
+        .top-controls { position: fixed; top: 15px; right: 15px; z-index: 101; display: flex; gap: 8px; }
+        .ctrl-btn { background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 10px; cursor: pointer; border-radius: 4px; font-size: 0.8rem; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; min-width: 36px; }
+        .ctrl-btn:active { transform: scale(0.9); }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; display: none; animation: fadeIn 0.4s ease-in-out; }
+        .container.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1, h2, h3 { font-weight: 600; margin-bottom: 15px; }
+        h2 { font-size: 1.3rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-color); }
+        h3 { font-size: 1rem; margin-top: 25px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.9rem; margin-bottom: 5px; opacity: 0.8; }
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; font-family: var(--font-mono); font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--focus-glow); }
+        .input-row { display: flex; gap: 10px; }
+        .input-row > div { flex: 1; }
+        .input-row > .spinbox-wrap { flex: 1; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent-color); border-radius: 50%; cursor: pointer; border: 2px solid var(--bg-color); transition: transform 0.1s; }
+        input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.2); }
+        .slider-value { font-family: var(--font-mono); color: var(--accent-color); font-weight: bold; }
+        .spinbox-wrap { display: flex; align-items: stretch; border: 1px solid var(--border-color); border-radius: 4px; background: var(--input-bg); transition: border-color 0.2s, box-shadow 0.2s; overflow: hidden; }
+        .spinbox-wrap:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--focus-glow); }
+        .spinbox-wrap input { border: none; box-shadow: none; border-radius: 0; background: transparent; }
+        .spinbox-wrap input:focus { box-shadow: none; }
+        .spinbox-controls { display: flex; flex-direction: column; border-left: 1px solid var(--border-color); width: 40px; flex-shrink: 0; }
+        .spin-btn { background: transparent; border: none; color: var(--text-color); cursor: pointer; flex: 1; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .spin-btn:hover { background: var(--border-color); color: var(--accent-color); }
+        .spin-btn:active { transform: scale(0.9); }
+        .spin-btn:first-child { border-bottom: 1px solid var(--border-color); }
+
+        .btn { display: block; width: 100%; padding: 15px; background: var(--accent-color); color: #fff; border: none; border-radius: 4px; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: transform 0.1s, filter 0.2s; font-family: var(--font-main); margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .btn:active { transform: scale(0.98); }
+        .btn:hover { filter: brightness(1.1); }
+        .btn-secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); box-shadow: none; }
+        .btn-small { padding: 8px; font-size: 0.9rem; }
+        .results-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .results-actions .btn { margin-top: 0; flex: 1; }
+        .results-box { background: var(--card-bg); border: 1px solid var(--accent-color); border-radius: 4px; padding: 20px; margin-top: 20px; font-family: var(--font-mono); display: none; }
+        .results-box.show { display: block; animation: fadeIn 0.3s; }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1rem; }
+        .result-row.total { font-weight: bold; font-size: 1.6rem; border-top: 1px dashed var(--border-color); padding-top: 10px; color: var(--accent-color); }
+        .formula-breakdown { background: var(--input-bg); padding: 15px; border-radius: 4px; margin-top: 15px; font-size: 0.85rem; border-left: 3px solid var(--accent-color); white-space: pre-wrap; word-wrap: break-word; }
+        .formula-step { margin-bottom: 8px; opacity: 0.9; }
+        .formula-step span { color: var(--accent-color); }
+        .data-card { background: var(--input-bg); border: 1px solid var(--border-color); border-left: 4px solid transparent; padding: 12px 15px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px; transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s; cursor: pointer; }
+        .data-card:hover { border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--focus-glow); }
+        .data-card:active { transform: scale(0.99); }
+        .data-card.active { border-left-color: var(--accent-color); background: var(--card-bg); }
+        .card-info { flex: 1; min-width: 0; }
+        .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .card-meta { font-family: var(--font-mono); font-size: 0.8rem; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .accent-text { color: var(--accent-color); font-weight: bold; }
+        .badge { font-size: 0.7rem; background: var(--accent-color); color: #fff; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; font-weight: bold; }
+        .card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-icon { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .btn-icon:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        .btn-icon.danger { border-color: transparent; color: var(--danger-color); opacity: 0.7; }
+        .btn-icon.danger:hover { background: var(--danger-color); color: #fff; opacity: 1; }
+        .empty-state { text-align: center; padding: 20px; border: 1px dashed var(--border-color); border-radius: 4px; color: var(--text-color); opacity: 0.5; font-size: 0.9rem; margin-top: 10px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; backdrop-filter: blur(10px); }
+        .nav-item { background: none; border: none; color: var(--text-color); font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.6; cursor: pointer; transition: opacity 0.2s, color 0.2s; }
+        .nav-item.active { color: var(--accent-color); opacity: 1; }
+        .nav-icon { font-size: 1.5rem; }
+        .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-color); color: var(--bg-color); padding: 12px 20px; border-radius: 4px; font-size: 0.9rem; z-index: 1000; opacity: 0; transition: transform 0.3s ease-out, opacity 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: var(--font-mono); }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-content h3 { margin: 0 0 20px 0; border: none; padding: 0; }
+        .btn-tg { background: #0088cc; color: #fff; margin-bottom: 10px; }
+        .btn-wa { background: #25D366; color: #fff; margin-bottom: 10px; }
+        .btn-more { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
+        .id-display { font-family: var(--font-mono); background: var(--input-bg); padding: 10px; border-radius: 4px; text-align: center; font-size: 1.2rem; font-weight: bold; color: var(--accent-color); border: 1px dashed var(--border-color); margin-top: 10px; }
+        .history-details { background: var(--input-bg); padding: 15px; border-radius: 4px; margin-top: 5px; font-family: var(--font-mono); font-size: 0.85rem; white-space: pre-wrap; border-left: 3px solid var(--accent-color); display: none; }
+        .history-details.show { display: block; }
+        .hidden { display: none !important; }
+        .footer-text { text-align: center; font-size: 0.8rem; opacity: 0.5; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+    <div class="smart-banner"><span data-i18n="banner_ad">📢 Реклама: 3D Gloop со скидкой 10% — лучший клей для моделей!</span></div>
+    
+    <div class="top-controls">
+        <button class="ctrl-btn" id="btn-lang" onclick="toggleLang()">RU</button>
+        <button class="ctrl-btn" onclick="toggleTheme()">🌙</button>
+        <button class="ctrl-btn" id="btn-ad" onclick="disableAd()">🚫</button>
+        <button class="ctrl-btn" onclick="buyCoffee()">☕</button>
+    </div>
+
+    <div id="toast" class="toast">Уведомление</div>
+
+    <div id="share-modal" class="modal-overlay" onclick="closeModal(event, 'share-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 data-i18n="share_title">📤 Поделиться чеком</h3>
+            <button class="btn btn-tg" onclick="shareTo('tg')" data-i18n="btn_tg">✈️ Отправить в Telegram</button>
+            <button class="btn btn-wa" onclick="shareTo('wa')" data-i18n="btn_wa">🟢 Отправить в WhatsApp</button>
+            <button class="btn btn-more" onclick="shareTo('native')" data-i18n="btn_more">📂 Другие приложения...</button>
+            <button class="btn btn-secondary btn-small" onclick="closeModal(null, 'share-modal')" style="margin-top:15px;" data-i18n="btn_cancel">Отмена</button>
+        </div>
+    </div>
+
+    <div id="project-modal" class="modal-overlay" onclick="closeModal(event, 'project-modal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 data-i18n="proj_title">🗂️ Паспорт проекта</h3>
+            <div class="form-group">
+                <label data-i18n="lbl_proj_name">Название изделия</label>
+                <input type="text" id="proj-name" placeholder="Кронштейн" oninput="generateProjectId()">
+            </div>
+            <div class="form-group">
+                <label data-i18n="lbl_proj_cust">Имя заказчика</label>
+                <input type="text" id="proj-customer" placeholder="Иван" oninput="generateProjectId()">
+            </div>
+            <div class="form-group">
+                <label data-i18n="lbl_proj_id">Сгенерированный ID</label>
+                <div class="id-display" id="proj-id-display">XXXX-XX-0000</div>
+            </div>
+            <button class="btn" onclick="saveProjectData()" data-i18n="btn_proj_save">Сохранить и закрыть</button>
+        </div>
+    </div>
+
+    <input type="file" id="import-file" accept=".json" style="display:none;">
+
+    <!-- TAB 1: CALCULATOR -->
+    <div id="tab-calc" class="container active">
+        <h2 data-i18n="h2_calc">⚙️ Расчет заказа</h2>
+        <button class="btn btn-secondary" onclick="openProjectModal()" data-i18n="btn_proj">🗂️ Открыть паспорт проекта</button>
+        <div style="height:15px;"></div>
+
+        <div class="form-group">
+            <label data-i18n="lbl_prt_prof">Профиль принтера</label>
+            <select id="calc-printer" onchange="DB.setSelectedPrinter(this.value)"></select>
+        </div>
+        <div class="form-group">
+            <label data-i18n="lbl_fil_prof">Профиль пластика</label>
+            <select id="calc-filament" onchange="DB.setSelectedFilament(this.value)"></select>
+        </div>
+        <div class="form-group">
+            <label data-i18n="lbl_weight">Вес детали (грамм)</label>
+            <div class="spinbox-wrap">
+                <input type="number" id="calc-weight" placeholder="127" value="100">
+                <div class="spinbox-controls">
+                    <button class="spin-btn" onclick="adjustValue('calc-weight', 10)">▲</button>
+                    <button class="spin-btn" onclick="adjustValue('calc-weight', -10)">▼</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label data-i18n="lbl_time">Время печати</label>
+            <div class="input-row">
+                <div class="spinbox-wrap">
+                    <input type="number" id="calc-hours" placeholder="Часы" value="4">
+                    <div class="spinbox-controls">
+                        <button class="spin-btn" onclick="adjustValue('calc-hours', 1)">▲</button>
+                        <button class="spin-btn" onclick="adjustValue('calc-hours', -1)">▼</button>
+                    </div>
+                </div>
+                <div class="spinbox-wrap">
+                    <input type="number" id="calc-minutes" placeholder="Минуты" value="20">
+                    <div class="spinbox-controls">
+                        <button class="spin-btn" onclick="adjustValue('calc-minutes', 5)">▲</button>
+                        <button class="spin-btn" onclick="adjustValue('calc-minutes', -5)">▼</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label><span data-i18n="lbl_waste">Брак и поддержки: </span><span id="val-waste" class="slider-value">10%</span></label>
+            <input type="range" id="calc-waste" min="0" max="50" value="10" oninput="document.getElementById('val-waste').innerText = this.value + '%'">
+        </div>
+        <div class="form-group">
+            <label data-i18n="lbl_labor">Стоимость работы мастера (руб)</label>
+            <div class="spinbox-wrap">
+                <input type="number" id="calc-labor" placeholder="500" value="300">
+                <div class="spinbox-controls">
+                    <button class="spin-btn" onclick="adjustValue('calc-labor', 50)">▲</button>
+                    <button class="spin-btn" onclick="adjustValue('calc-labor', -50)">▼</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label><span data-i18n="lbl_markup">Наценка за сложность: </span><span id="val-markup" class="slider-value">100%</span></label>
+            <input type="range" id="calc-markup" min="0" max="300" value="100" oninput="document.getElementById('val-markup').innerText = this.value + '%'">
+        </div>
+        <button class="btn" onclick="calculate()" data-i18n="btn_calc">Рассчитать</button>
+        
+        <div id="results-box" class="results-box">
+            <div class="result-row"><span data-i18n="res_cost">Себестоимость:</span> <span id="res-cost">0.00 ₽</span></div>
+            <div class="result-row total"><span data-i18n="res_price">Цена для клиента:</span> <span id="res-price">0.00 ₽</span></div>
+            <div class="formula-breakdown" id="formula-breakdown"></div>
+            <div class="results-actions">
+                <button class="btn btn-secondary btn-small" onclick="copyReceipt()" data-i18n="btn_copy">📋 Скопировать</button>
+                <button class="btn btn-secondary btn-small" onclick="openModal('share-modal')" data-i18n="btn_share">📤 Поделиться</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: FILAMENTS -->
+    <div id="tab-filament" class="container">
+        <h2 data-i18n="h2_fil">🧵 База филамента</h2>
+        <div class="form-group">
+            <label data-i18n="lbl_fil_name">Название / Тип</label>
+            <input type="text" id="fil-name" placeholder="FDPlast PLA Черный">
+        </div>
+        <div class="form-group">
+            <div class="input-row">
+                <div class="spinbox-wrap">
+                    <label data-i18n="lbl_fil_weight">Вес катушки (г)</label>
+                    <input type="number" id="fil-weight" value="1000">
+                    <div class="spinbox-controls">
+                        <button class="spin-btn" onclick="adjustValue('fil-weight', 50)">▲</button>
+                        <button class="spin-btn" onclick="adjustValue('fil-weight', -50)">▼</button>
+                    </div>
+                </div>
+                <div class="spinbox-wrap">
+                    <label data-i18n="lbl_fil_price">Цена (руб)</label>
+                    <input type="number" id="fil-price" placeholder="1200">
+                    <div class="spinbox-controls">
+                        <button class="spin-btn" onclick="adjustValue('fil-price', 50)">▲</button>
+                        <button class="spin-btn" onclick="adjustValue('fil-price', -50)">▼</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn" onclick="addFilament()" data-i18n="btn_add_fil">Добавить катушку</button>
+        <h3 data-i18n="h3_dir">Справочник</h3>
+        <div id="filament-list"></div>
+    </div>
+
+    <!-- TAB 3: PRINTERS -->
+    <div id="tab-printer" class="container">
+        <h2 data-i18n="h2_prt">🖨️ Принтеры и Тарифы</h2>
+        <div class="form-group">
+            <label data-i18n="lbl_prt_name">Имя принтера</label>
+            <input type="text" id="prt-name" placeholder="Tronxy X5SA">
+        </div>
+        <div class="form-group">
+            <div class="input-row">
+                <div class="spinbox-wrap">
+                    <label data-i18n="lbl_prt_power">Мощность (Вт)</label>
+                    <input type="number" id="prt-power" value="200">
+                    <div class="spinbox-controls">
+                        <button class="spin-btn" onclick="adjustValue('prt-power', 10)">▲</button>
+                        <button class="spin-btn" onclick="adjustValue('prt-power', -10)">▼</button>
+                    </div>
+                </div>
+                <div class="spinbox-wrap">
+                    <label data-i18n="lbl_prt_amort">Амортизация (руб/час)</label>
+                    <input type="number" id="prt-amort" value="5">
+                    <div class="spinbox-controls">
+                        <button class="spin-btn" onclick="adjustValue('prt-amort', 1)">▲</button>
+                        <button class="spin-btn" onclick="adjustValue('prt-amort', -1)">▼</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 data-i18n="h3_elec">Электричество</h3>
+        <div class="form-group">
+            <label data-i18n="lbl_kwh">Стоимость 1 кВт/ч (руб)</label>
+            <div class="spinbox-wrap">
+                <input type="number" id="prt-electricity" placeholder="6.5" step="0.1" onchange="saveElectricity()">
+                <div class="spinbox-controls">
+                    <button class="spin-btn" onclick="adjustValue('prt-electricity', 0.1)">▲</button>
+                    <button class="spin-btn" onclick="adjustValue('prt-electricity', -0.1)">▼</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="addPrinter()" data-i18n="btn_add_prt">Добавить принтер</button>
+        
+        <h3 data-i18n="h3_prt_list">Мои принтеры</h3>
+        <div id="printer-list"></div>
+    </div>
+
+    <!-- TAB 4: HISTORY -->
+    <div id="tab-history" class="container">
+        <h2 data-i18n="h2_hist">📁 История заказов</h2>
+        <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <button class="btn btn-secondary btn-small" onclick="exportHistory()" style="margin-top:0;" data-i18n="btn_export">📤 Экспорт базы</button>
+            <button class="btn btn-secondary btn-small" onclick="document.getElementById('import-file').click()" style="margin-top:0;" data-i18n="btn_import">📥 Импорт базы</button>
+        </div>
+        <div id="history-list"></div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('calc', this)"><span class="nav-icon">🧮</span> <span data-i18n="nav_calc">Расчет</span></button>
+        <button class="nav-item" onclick="switchTab('filament', this)"><span class="nav-icon">🧵</span> <span data-i18n="nav_fil">Филамент</span></button>
+        <button class="nav-item" onclick="switchTab('printer', this)"><span class="nav-icon">🖨️</span> <span data-i18n="nav_prt">Железо</span></button>
+        <button class="nav-item" onclick="switchTab('history', this)"><span class="nav-icon">📁</span> <span data-i18n="nav_hist">История</span></button>
+    </nav>
+
+    <script>
+        var i18n = {
+            ru: {
+                nav_calc: "Расчет", nav_fil: "Филамент", nav_prt: "Железо", nav_hist: "История",
+                h2_calc: "⚙️ Расчет заказа", btn_proj: "🗂️ Открыть паспорт проекта",
+                lbl_prt_prof: "Профиль принтера", lbl_fil_prof: "Профиль пластика",
+                lbl_weight: "Вес детали (грамм)", lbl_time: "Время печати", lbl_waste: "Брак и поддержки: ", lbl_labor: "Стоимость работы мастера (руб)", lbl_markup: "Наценка за сложность: ", btn_calc: "Рассчитать",
+                res_cost: "Себестоимость:", res_price: "Цена для клиента:", btn_copy: "📋 Скопировать", btn_share: "📤 Поделиться",
+                h2_fil: "🧵 База филамента", lbl_fil_name: "Название / Тип", lbl_fil_weight: "Вес катушки (г)", lbl_fil_price: "Цена (руб)", btn_add_fil: "Добавить катушку", h3_dir: "Справочник",
+                h2_prt: "🖨️ Принтеры и Тарифы", lbl_prt_name: "Имя принтера", lbl_prt_power: "Мощность (Вт)", lbl_prt_amort: "Амортизация (руб/час)", h3_elec: "Электричество", lbl_kwh: "Стоимость 1 кВт/ч (руб)", btn_add_prt: "Добавить принтер", h3_prt_list: "Мои принтеры",
+                h2_hist: "📁 История заказов", btn_export: "📤 Экспорт базы", btn_import: "📥 Импорт базы",
+                proj_title: "🗂️ Паспорт проекта", lbl_proj_name: "Название изделия", lbl_proj_cust: "Имя заказчика", lbl_proj_id: "Сгенерированный ID", btn_proj_save: "Сохранить и закрыть",
+                share_title: "📤 Поделиться чеком", btn_tg: "✈️ Отправить в Telegram", btn_wa: "🟢 Отправить в WhatsApp", btn_more: "📂 Другие приложения...", btn_cancel: "Отмена",
+                toast_copied: "✅ Чек скопирован!", toast_ad_off: "Спасибо! Реклама отключена.", toast_coffee: "Спасибо за кофе! ☕", toast_lang: "Язык изменен на Русский", toast_elec: "Тариф сохранен!", toast_proj: "Паспорт сохранен: ", 
+                toast_hist_empty: "История пуста, нечего выгружать", toast_hist_exp: "База выгружена в файл!", toast_hist_imp_ok: "История успешно импортирована!", toast_hist_imp_err: "Ошибка: неверный формат файла", toast_hist_read_err: "Ошибка чтения файла", toast_hist_del: "Заказ удален из истории",
+                toast_fil_added: "Катушка добавлена!", toast_fil_del: "Катушка удалена", toast_prt_added: "Принтер добавлен!", toast_prt_sel: "Принтер выбран по умолчанию", toast_prt_del: "Принтер удален",
+                rec_id: "ID: ", rec_item: "Изделие: ", rec_cust: "Заказчик: ", rec_mat: "1. Материал:\n", rec_elec: "2. Электричество:\n", rec_amort: "3. Амортизация:\n", rec_cost_label: "4. Себестоимость (1+2+3): ", rec_labor_label: "5. Работа мастера: ", rec_markup_label: "6. Наценка ", rec_total: "ИТОГО (4+5+6): ",
+                rec_user_title: "🛠 Расчет заказа на 3D печать:\n\n", rec_user_id: "🆔 ID: ", rec_user_item: "🏷 Изделие: ", rec_user_cust: "👤 Заказчик: ", rec_user_fil: "🧵 Пластик: ", rec_user_weight: "⚖️ Вес: ", rec_user_time: "⏱ Время печати: ", rec_user_price: "💰 Итоговая стоимость: ",
+                empty_fil: "Список пуст. Добавьте первую катушку выше ⬆️", empty_prt: "Список пуст. Добавьте первый принтер выше ⬆️", empty_hist: "История пуста. Сделайте первый расчет!",
+                err_fill: "Ошибка: Заполните все поля!", err_calc: "Ошибка расчета: ", err_no_data: "Добавьте пластик и принтер!"
+            },
+            en: {
+                nav_calc: "Calc", nav_fil: "Filament", nav_prt: "Hardware", nav_hist: "History",
+                h2_calc: "⚙️ Order Calculation", btn_proj: "🗂️ Open Project Passport",
+                lbl_prt_prof: "Printer Profile", lbl_fil_prof: "Filament Profile",
+                lbl_weight: "Part Weight (grams)", lbl_time: "Print Time", lbl_waste: "Waste & Supports: ", lbl_labor: "Master Labor Cost (RUB)", lbl_markup: "Complexity Markup: ", btn_calc: "Calculate",
+                res_cost: "Cost Price:", res_price: "Client Price:", btn_copy: "📋 Copy", btn_share: "📤 Share",
+                h2_fil: "🧵 Filament Database", lbl_fil_name: "Name / Type", lbl_fil_weight: "Spool Weight (g)", lbl_fil_price: "Price (RUB)", btn_add_fil: "Add Spool", h3_dir: "Directory",
+                h2_prt: "🖨️ Printers & Rates", lbl_prt_name: "Printer Name", lbl_prt_power: "Power (W)", lbl_prt_amort: "Depreciation (RUB/hr)", h3_elec: "Electricity", lbl_kwh: "Cost 1 kWh (RUB)", btn_add_prt: "Add Printer", h3_prt_list: "My Printers",
+                h2_hist: "📁 Order History", btn_export: "📤 Export DB", btn_import: "📥 Import DB",
+                proj_title: "🗂️ Project Passport", lbl_proj_name: "Product Name", lbl_proj_cust: "Customer Name", lbl_proj_id: "Generated ID", btn_proj_save: "Save & Close",
+                share_title: "📤 Share Receipt", btn_tg: "✈️ Send to Telegram", btn_wa: "🟢 Send to WhatsApp", btn_more: "📂 Other apps...", btn_cancel: "Cancel",
+                toast_copied: "✅ Receipt copied!", toast_ad_off: "Thank you! Ads disabled.", toast_coffee: "Thanks for the coffee! ☕", toast_lang: "Language changed to English", toast_elec: "Rate saved!", toast_proj: "Passport saved: ", 
+                toast_hist_empty: "History is empty, nothing to export", toast_hist_exp: "Database exported!", toast_hist_imp_ok: "History imported successfully!", toast_hist_imp_err: "Error: invalid file format", toast_hist_read_err: "File reading error", toast_hist_del: "Order deleted",
+                toast_fil_added: "Spool added!", toast_fil_del: "Spool deleted", toast_prt_added: "Printer added!", toast_prt_sel: "Default printer selected", toast_prt_del: "Printer deleted",
+                rec_id: "ID: ", rec_item: "Item: ", rec_cust: "Customer: ", rec_mat: "1. Material:\n", rec_elec: "2. Electricity:\n", rec_amort: "3. Depreciation:\n", rec_cost_label: "4. Cost Price (1+2+3): ", rec_labor_label: "5. Master Labor: ", rec_markup_label: "6. Markup ", rec_total: "TOTAL (4+5+6): ",
+                rec_user_title: "🛠 3D Print Order Calculation:\n\n", rec_user_id: "🆔 ID: ", rec_user_item: "🏷 Item: ", rec_user_cust: "👤 Customer: ", rec_user_fil: "🧵 Filament: ", rec_user_weight: "⚖️ Weight: ", rec_user_time: "⏱ Print Time: ", rec_user_price: "💰 Total Price: ",
+                empty_fil: "List is empty. Add your first spool above ⬆️", empty_prt: "List is empty. Add your first printer above ⬆️", empty_hist: "History is empty. Make your first calculation!",
+                err_fill: "Error: Fill in all fields!", err_calc: "Calculation error: ", err_no_data: "Add filament and printer!"
+            }
+        };
+
+        var memoryStore = { filaments: '[]', printers: '[]', electricity: '6.5', theme: 'dark', calc_history: '[]', sel_fil: '', sel_prt: '', ad_disabled: 'false', lang: 'ru' };
+        var useLocalStorage = true;
+        try { var testKey = '__test__'; localStorage.setItem(testKey, '1'); localStorage.removeItem(testKey); } catch (e) { useLocalStorage = false; }
+
+        var DB = {
+            _getItem: function(key) { return useLocalStorage ? localStorage.getItem(key) : memoryStore[key]; },
+            _setItem: function(key, val) { if(useLocalStorage) localStorage.setItem(key, val); else memoryStore[key] = val; },
+            getFilaments: function() { try { return JSON.parse(this._getItem('filaments')) || []; } catch(e) { return []; } },
+            setFilaments: function(d) { this._setItem('filaments', JSON.stringify(d)); },
+            getPrinters: function() { try { return JSON.parse(this._getItem('printers')) || []; } catch(e) { return []; } },
+            setPrinters: function(d) { this._setItem('printers', JSON.stringify(d)); },
+            getElectricity: function() { return this._getItem('electricity') || '6.5'; },
+            setElectricity: function(v) { this._setItem('electricity', v); },
+            getTheme: function() { return this._getItem('theme') || 'dark'; },
+            setTheme: function(v) { this._setItem('theme', v); },
+            getHistory: function() { try { return JSON.parse(this._getItem('calc_history')) || []; } catch(e) { return []; } },
+            setHistory: function(d) { this._setItem('calc_history', JSON.stringify(d)); },
+            getSelectedFilament: function() { return this._getItem('sel_fil') || ''; },
+            setSelectedFilament: function(v) { this._setItem('sel_fil', v); },
+            getSelectedPrinter: function() { return this._getItem('sel_prt') || ''; },
+            setSelectedPrinter: function(v) { this._setItem('sel_prt', v); },
+            getAdStatus: function() { return this._getItem('ad_disabled') === 'true'; },
+            setAdStatus: function(v) { this._setItem('ad_disabled', v); },
+            getLang: function() { return this._getItem('lang') || 'ru'; },
+            setLang: function(v) { this._setItem('lang', v); }
+        };
+
+        function applyTranslations() { var lang = DB.getLang(); var dict = i18n[lang]; document.querySelectorAll('[data-i18n]').forEach(function(el) { var key = el.getAttribute('data-i18n'); if (dict[key]) el.innerText = dict[key]; }); document.getElementById('btn-lang').innerText = lang.toUpperCase(); }
+        function toggleLang() { var newLang = DB.getLang() === 'ru' ? 'en' : 'ru'; DB.setLang(newLang); applyTranslations(); showToast(i18n[newLang].toast_lang); renderFilaments(); renderPrinters(); updateCalcDropdowns(); renderHistory(); }
+
+        function showToast(msg) { var t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 2500); }
+        function toggleTheme() { var current = document.body.getAttribute('data-theme'); var newTheme = current === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', newTheme); DB.setTheme(newTheme); }
+        function disableAd() { DB.setAdStatus('true'); document.body.classList.add('ad-free'); showToast(i18n[DB.getLang()].toast_ad_off); }
+        function buyCoffee() { showToast(i18n[DB.getLang()].toast_coffee); }
+
+        function switchTab(tabId, btn) { var containers = document.querySelectorAll('.container'); for (var i = 0; i < containers.length; i++) { containers[i].classList.remove('active'); } document.getElementById('tab-' + tabId).classList.add('active'); var navItems = document.querySelectorAll('.nav-item'); for (var i = 0; i < navItems.length; i++) { navItems[i].classList.remove('active'); } btn.classList.add('active'); if(tabId === 'calc') updateCalcDropdowns(); if(tabId === 'filament') renderFilaments(); if(tabId === 'printer') renderPrinters(); if(tabId === 'history') renderHistory(); }
+        function openModal(id) { document.getElementById(id).classList.add('show'); }
+        function closeModal(event, id) { if(event && event.target !== event.currentTarget) return; document.getElementById(id).classList.remove('show'); }
+
+        var translitMap = { 'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'ts','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya' };
+        function translit(str) { if(!str) return ''; return str.toLowerCase().split('').map(function(char){ if(/[а-яё]/.test(char)) return translitMap[char] || ''; if(/[a-z0-9]/.test(char)) return char; return ''; }).join(''); }
+        var currentRandomSalt = 0; var currentProjectData = { name: '', customer: '', id: '' };
+
+        function openProjectModal() { currentRandomSalt = Math.floor(1000 + Math.random() * 9000); document.getElementById('proj-name').value = currentProjectData.name || ''; document.getElementById('proj-customer').value = currentProjectData.customer || ''; generateProjectId(); openModal('project-modal'); }
+        function generateProjectId() { var name = document.getElementById('proj-name').value.trim(); var customer = document.getElementById('proj-customer').value.trim(); var namePart = translit(name).substring(0, 4).toUpperCase(); if(namePart.length < 4) namePart = (namePart + 'XXXX').substring(0,4); var custParts = customer.split(/\s+/); var custPart = ''; for(var i=0; i<Math.min(2, custParts.length); i++) { var t = translit(custParts[i]).charAt(0).toUpperCase(); if(t) custPart += t; } if(!custPart) custPart = 'X'; document.getElementById('proj-id-display').innerText = namePart + '-' + custPart + '-' + currentRandomSalt; }
+        function saveProjectData() { currentProjectData.name = document.getElementById('proj-name').value.trim() || 'Без названия'; currentProjectData.customer = document.getElementById('proj-customer').value.trim() || 'Для себя'; currentProjectData.id = document.getElementById('proj-id-display').innerText; closeModal(null, 'project-modal'); showToast(i18n[DB.getLang()].toast_proj + currentProjectData.id); }
+
+        function adjustValue(id, delta) { var input = document.getElementById(id); if(!input) return; var currentVal = parseFloat(input.value) || 0; currentVal = currentVal + delta; if (currentVal < 0) currentVal = 0; if (delta % 1 !== 0) { input.value = currentVal.toFixed(1); } else { input.value = Math.round(currentVal); } if(id === 'prt-electricity') DB.setElectricity(input.value); }
+
+        function addFilament() { try { var name = document.getElementById('fil-name').value.trim(); var weight = parseFloat(document.getElementById('fil-weight').value); var price = parseFloat(document.getElementById('fil-price').value); if(!name || isNaN(weight) || weight <= 0 || isNaN(price) || price <= 0) { showToast(i18n[DB.getLang()].err_fill); return; } var filaments = DB.getFilaments(); filaments.push({ id: Date.now(), name: name, weight: weight, price: price }); DB.setFilaments(filaments); document.getElementById('fil-name').value = ''; document.getElementById('fil-price').value = ''; showToast(i18n[DB.getLang()].toast_fil_added); renderFilaments(); } catch(e) { showToast(i18n[DB.getLang()].err_calc + e.message); } }
+        function renderFilaments() { var lang = DB.getLang(); var list = document.getElementById('filament-list'); var filaments = DB.getFilaments(); list.innerHTML = ''; if(filaments.length === 0) { list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_fil+'</div>'; return; } for (var i = 0; i < filaments.length; i++) { var f = filaments[i]; var div = document.createElement('div'); div.className = 'data-card'; div.innerHTML = '<div class="card-info"><div class="card-title">' + f.name + '</div><div class="card-meta">' + f.weight + 'g | ' + f.price + ' ₽ | <span class="accent-text">' + (f.price/f.weight).toFixed(2) + ' ₽/g</span></div></div><div class="card-actions"><button class="btn-icon danger" onclick="deleteFilament(' + f.id + ')">Delete</button></div>'; list.appendChild(div); } }
+        function deleteFilament(id) { DB.setFilaments(DB.getFilaments().filter(function(f) { return f.id !== id; })); showToast(i18n[DB.getLang()].toast_fil_del); renderFilaments(); }
+
+        function saveElectricity() { DB.setElectricity(document.getElementById('prt-electricity').value); showToast(i18n[DB.getLang()].toast_elec); }
+        function addPrinter() { try { var name = document.getElementById('prt-name').value.trim(); var power = parseFloat(document.getElementById('prt-power').value); var amort = parseFloat(document.getElementById('prt-amort').value); if(!name || isNaN(power) || power <= 0 || isNaN(amort) || amort < 0) { showToast(i18n[DB.getLang()].err_fill); return; } var printers = DB.getPrinters(); printers.push({ id: Date.now(), name: name, power: power, amort: amort, active: printers.length === 0 }); DB.setPrinters(printers); document.getElementById('prt-name').value = ''; showToast(i18n[DB.getLang()].toast_prt_added); renderPrinters(); } catch(e) { showToast(i18n[DB.getLang()].err_calc + e.message); } }
+        function renderPrinters() { var lang = DB.getLang(); var list = document.getElementById('printer-list'); var printers = DB.getPrinters(); list.innerHTML = ''; document.getElementById('prt-electricity').value = DB.getElectricity(); if(printers.length === 0) { list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_prt+'</div>'; return; } for (var i = 0; i < printers.length; i++) { var p = printers[i]; var div = document.createElement('div'); div.className = 'data-card ' + (p.active ? 'active' : ''); div.innerHTML = '<div class="card-info"><div class="card-title">' + p.name + (p.active ? ' <span class="badge">'+ (lang=='ru'?'Активен':'Active') +'</span>' : '') + '</div><div class="card-meta">' + p.power + ' W | ' + (lang=='ru'?'Износ':'Depreciation') + ': ' + p.amort + ' ₽/h</div></div><div class="card-actions">' + (!p.active ? '<button class="btn-icon" onclick="setActivePrinter(' + p.id + ')">'+(lang=='ru'?'Выбрать':'Select')+'</button>' : '') + '<button class="btn-icon danger" onclick="deletePrinter(' + p.id + ')">'+(lang=='ru'?'Удалить':'Delete')+'</button></div>'; list.appendChild(div); } }
+        function setActivePrinter(id) { DB.setPrinters(DB.getPrinters().map(function(p) { return { name: p.name, id: p.id, power: p.power, amort: p.amort, active: p.id === id }; })); renderPrinters(); showToast(i18n[DB.getLang()].toast_prt_sel); }
+        function deletePrinter(id) { DB.setPrinters(DB.getPrinters().filter(function(p) { return p.id !== id; })); showToast(i18n[DB.getLang()].toast_prt_del); renderPrinters(); }
+
+        function updateCalcDropdowns() { var filSelect = document.getElementById('calc-filament'); var prtSelect = document.getElementById('calc-printer'); var filaments = DB.getFilaments(); var printers = DB.getPrinters(); var selFil = DB.getSelectedFilament(); var selPrt = DB.getSelectedPrinter(); if(filaments.length > 0) { var filOpts = ''; for(var i=0; i<filaments.length; i++) { filOpts += '<option value="' + filaments[i].id + '" ' + (filaments[i].id == selFil ? 'selected' : '') + '>' + filaments[i].name + '</option>'; } filSelect.innerHTML = filOpts; } else { filSelect.innerHTML = '<option disabled>...</option>'; } if(printers.length > 0) { var prtOpts = ''; for(var i=0; i<printers.length; i++) { prtOpts += '<option value="' + printers[i].id + '" ' + (printers[i].id == selPrt ? 'selected' : '') + '>' + printers[i].name + '</option>'; } prtSelect.innerHTML = prtOpts; } else { prtSelect.innerHTML = '<option disabled>...</option>'; } }
+
+        function calculate() { try { var lang = DB.getLang(); var t = i18n[lang]; var filaments = DB.getFilaments(); var printers = DB.getPrinters(); if(filaments.length === 0 || printers.length === 0) { showToast(t.err_no_data); return; } DB.setSelectedFilament(document.getElementById('calc-filament').value); DB.setSelectedPrinter(document.getElementById('calc-printer').value); var filament = filaments.find(function(f) { return f.id == document.getElementById('calc-filament').value; }); var printer = printers.find(function(p) { return p.id == document.getElementById('calc-printer').value; }); var weight = parseFloat(document.getElementById('calc-weight').value) || 0; var hours = parseFloat(document.getElementById('calc-hours').value) || 0; var minutes = parseFloat(document.getElementById('calc-minutes').value) || 0; var waste = parseFloat(document.getElementById('calc-waste').value) / 100; var labor = parseFloat(document.getElementById('calc-labor').value) || 0; var markup = parseFloat(document.getElementById('calc-markup').value) / 100; var electricityCost = parseFloat(DB.getElectricity()) || 0; var timeInHours = hours + (minutes / 60); var plasticCost = (filament.price / filament.weight) * (weight + (weight * waste)); var energyCost = timeInHours * electricityCost * (printer.power / 1000); var amortCost = timeInHours * printer.amort; var costPrice = plasticCost + energyCost + amortCost; var clientPrice = costPrice + labor + ((costPrice + labor) * markup); document.getElementById('res-cost').innerText = costPrice.toFixed(2) + ' ₽'; document.getElementById('res-price').innerText = clientPrice.toFixed(2) + ' ₽'; var pName = currentProjectData.name || (lang=='ru'?'Без названия':'Untitled'); var pCust = currentProjectData.customer || (lang=='ru'?'Для себя':'For myself'); var pId = currentProjectData.id || 'XXXX-XX-0000'; var adminReceipt = "================================\n" + t.rec_id + pId + "\n" + t.rec_item + pName + "\n" + t.rec_cust + pCust + "\n================================\n\n" + t.rec_mat + "(" + filament.price + "₽ ÷ " + filament.weight + "g) × (" + weight + "g + " + (weight * waste).toFixed(2) + "g) = " + plasticCost.toFixed(2) + " ₽\n\n" + t.rec_elec + timeInHours.toFixed(2) + "h × " + electricityCost + "₽ × " + printer.power + "W/1000 = " + energyCost.toFixed(2) + " ₽\n\n" + t.rec_amort + timeInHours.toFixed(2) + "h × " + printer.amort + "₽ = " + amortCost.toFixed(2) + " ₽\n\n" + t.rec_cost_label + costPrice.toFixed(2) + " ₽\n\n" + t.rec_labor_label + labor.toFixed(2) + " ₽\n\n" + t.rec_markup_label + (markup * 100) + "%: " + ((costPrice + labor) * markup).toFixed(2) + " ₽\n\n================================\n" + t.rec_total + clientPrice.toFixed(2) + " ₽\n================================\n"; document.getElementById('formula-breakdown').innerText = adminReceipt; document.getElementById('results-box').classList.add('show'); var userReceipt = t.rec_user_title + t.rec_user_id + pId + "\n" + t.rec_user_item + pName + "\n" + t.rec_user_cust + pCust + "\n" + t.rec_user_fil + filament.name + "\n" + t.rec_user_weight + weight + "g\n" + t.rec_user_time + hours + "h " + minutes + "m\n" + t.rec_user_price + clientPrice.toFixed(2) + " ₽"; window.lastCalc = { id: pId, name: pName, customer: pCust, filament: filament.name, weight: weight, hours: hours, minutes: minutes, price: clientPrice.toFixed(2), date: new Date().toLocaleString(), adminReceipt: adminReceipt, userReceipt: userReceipt }; var history = DB.getHistory(); history.unshift(window.lastCalc); if(history.length > 50) history = history.slice(0, 50); DB.setHistory(history); } catch(e) { showToast(i18n[DB.getLang()].err_calc + e.message); } }
+
+        function copyReceipt() { var text = window.lastCalc ? window.lastCalc.userReceipt : ""; if (!text) return; if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function() { showToast(i18n[DB.getLang()].toast_copied); }).catch(function() { fallbackCopyText(text); }); } else { fallbackCopyText(text); } }
+        function fallbackCopyText(text) { var textArea = document.createElement("textarea"); textArea.value = text; textArea.style.position = 'fixed'; textArea.style.top = '-9999px'; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { document.execCommand('copy'); showToast(i18n[DB.getLang()].toast_copied); } catch (err) { showToast('Error'); } document.body.removeChild(textArea); }
+
+        function shareTo(app) { var text = encodeURIComponent(window.lastCalc ? window.lastCalc.userReceipt : ""); var url = ''; if(app === 'tg') { url = 'https://t.me/share/url?url=&text=' + text; } else if(app === 'wa') { url = 'https://wa.me/?text=' + text; } else if(app === 'native') { if (navigator.share) { navigator.share({ title: '3D Print', text: decodeURIComponent(text) }).then(function(){ closeModal(null, 'share-modal'); }).catch(function(){ closeModal(null, 'share-modal'); }); return; } else { copyReceipt(); closeModal(null, 'share-modal'); return; } } window.open(url, '_blank'); closeModal(null, 'share-modal'); }
+
+        function renderHistory() { var lang = DB.getLang(); var list = document.getElementById('history-list'); var history = DB.getHistory(); list.innerHTML = ''; if(history.length === 0) { list.innerHTML = '<div class="empty-state">'+i18n[lang].empty_hist+'</div>'; return; } for (var i = 0; i < history.length; i++) { var h = history[i]; var card = document.createElement('div'); card.style.marginBottom = '15px'; var cardHtml = '<div class="data-card" onclick="toggleHistoryDetails(\'hist-' + i + '\')"><div class="card-info"><div class="card-title">[' + h.id + '] ' + h.name + '</div><div class="card-meta">' + h.date + ' | ' + h.price + ' ₽</div></div><div class="card-actions"><button class="btn-icon danger" onclick="deleteHistoryItem(' + i + ', event)">Delete</button></div></div><div id="hist-' + i + '" class="history-details">' + (h.adminReceipt || '...') + '</div>'; card.innerHTML = cardHtml; list.appendChild(card); } }
+        function toggleHistoryDetails(id) { var el = document.getElementById(id); if(el) el.classList.toggle('show'); }
+        function deleteHistoryItem(index, event) { event.stopPropagation(); var history = DB.getHistory(); history.splice(index, 1); DB.setHistory(history); renderHistory(); showToast(i18n[DB.getLang()].toast_hist_del); }
+
+        function exportHistory() { var lang = DB.getLang(); var history = DB.getHistory(); if(history.length === 0) { showToast(i18n[lang].toast_hist_empty); return; } var dataStr = JSON.stringify(history, null, 2); var blob = new Blob([dataStr], {type: "application/json"}); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = "3d_calc_history.json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast(i18n[lang].toast_hist_exp); }
+        function importHistory(event) { var lang = DB.getLang(); var file = event.target.files[0]; if(!file) return; var reader = new FileReader(); reader.onload = function(e) { try { var imported = JSON.parse(e.target.result); if(Array.isArray(imported)) { DB.setHistory(imported); renderHistory(); showToast(i18n[lang].toast_hist_imp_ok); } else { showToast(i18n[lang].toast_hist_imp_err); } } catch(err) { showToast(i18n[lang].toast_hist_read_err); } }; reader.readAsText(file); event.target.value = ''; }
+
+        window.onload = function() {
+            document.body.setAttribute('data-theme', DB.getTheme());
+            if (DB.getAdStatus()) document.body.classList.add('ad-free');
+            applyTranslations();
+            renderFilaments(); renderPrinters(); updateCalcDropdowns();
+            document.getElementById('import-file').addEventListener('change', importHistory);
+        };
+
+        // --- PWA РЕГИСТРАЦИЯ SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
