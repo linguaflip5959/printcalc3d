@@ -1,10 +1,12 @@
 {
+  "id": "3d-print-calc-crm",
   "name": "3D Print Calculator CRM",
   "short_name": "3D Calc",
-  "description": "Калькулятор для расчета стоимости 3D печати",
+  "description": "3D printing cost calculator",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#0a0e14",
   "theme_color": "#0a0e14",
   "icons": [
@@ -19,6 +21,15 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./screenshot1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Main calculation screen"
     }
   ]
 }
