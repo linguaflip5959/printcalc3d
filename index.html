@@ -260,9 +260,10 @@
             <label data-i18n="lbl_fil_name">Название / Тип</label>
             <input type="text" id="fil-name" placeholder="FDPlast PLA Черный">
         </div>
+        
         <div class="form-group">
+            <label data-i18n="lbl_fil_weight">Вес катушки (г)</label>
             <div class="spinbox-wrap">
-                <label data-i18n="lbl_fil_weight">Вес катушки (г)</label>
                 <input type="number" id="fil-weight" placeholder="1000" value="1000">
                 <div class="spinbox-controls">
                     <button class="spin-btn" onclick="adjustValue('fil-weight', 50)">▲</button>
@@ -270,9 +271,10 @@
                 </div>
             </div>
         </div>
+        
         <div class="form-group">
+            <label data-i18n="lbl_fil_price">Цена (руб)</label>
             <div class="spinbox-wrap">
-                <label data-i18n="lbl_fil_price">Цена (руб)</label>
                 <input type="number" id="fil-price" placeholder="1200">
                 <div class="spinbox-controls">
                     <button class="spin-btn" onclick="adjustValue('fil-price', 50)">▲</button>
@@ -280,6 +282,7 @@
                 </div>
             </div>
         </div>
+
         <button class="btn" onclick="addFilament()" data-i18n="btn_add_fil">Добавить катушку</button>
         <h3 data-i18n="h3_dir">Справочник</h3>
         <div id="filament-list"></div>
@@ -292,9 +295,10 @@
             <label data-i18n="lbl_prt_name">Имя принтера</label>
             <input type="text" id="prt-name" placeholder="Tronxy X5SA">
         </div>
+        
         <div class="form-group">
+            <label data-i18n="lbl_prt_power">Мощность (Вт)</label>
             <div class="spinbox-wrap">
-                <label data-i18n="lbl_prt_power">Мощность (Вт)</label>
                 <input type="number" id="prt-power" placeholder="200" value="200">
                 <div class="spinbox-controls">
                     <button class="spin-btn" onclick="adjustValue('prt-power', 10)">▲</button>
@@ -302,9 +306,10 @@
                 </div>
             </div>
         </div>
+        
         <div class="form-group">
+            <label data-i18n="lbl_prt_amort">Амортизация (руб/час)</label>
             <div class="spinbox-wrap">
-                <label data-i18n="lbl_prt_amort">Амортизация (руб/час)</label>
                 <input type="number" id="prt-amort" placeholder="5" value="5">
                 <div class="spinbox-controls">
                     <button class="spin-btn" onclick="adjustValue('prt-amort', 1)">▲</button>
