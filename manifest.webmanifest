@@ -31,5 +31,23 @@
       "form_factor": "narrow",
       "label": "Main calculation screen"
     }
+  ],
+  "lang": "en",
+  "shortcuts": [
+    {
+      "name": "New calculation",
+      "url": "./",
+      "description": null
+    },
+    {
+      "name": "Order history",
+      "url": "./?tab=history",
+      "description": "View past orders"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
   ]
 }
